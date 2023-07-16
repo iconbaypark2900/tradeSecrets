@@ -1,5 +1,9 @@
-const MyContract = artifacts.require("MyContract");
+const MyToken = artifacts.require("MyToken");
+const LendingContract = artifacts.require("LendingContract");
 
-module.exports = function (deployer) {
-  deployer.deploy(MyContract);
+module.exports = async function(deployer) {
+    await deployer.deploy(MyToken);
+    const myToken = await MyToken.deployed();
+    await deployer.deploy(LendingContract, myToken.address);
 };
+

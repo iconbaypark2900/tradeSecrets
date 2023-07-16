@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-// import MyContract from '../build/contracts/MyContract.json'; 
 import MyToken from 'contracts/MyToken.json';
 import LendingContract from 'contracts/LendingContract.json';
 
@@ -35,24 +34,54 @@ function App() {
   }
 
   async function depositEth(amount) {
-    if(lendingContract && amount) {
-      const amountWei = ethers.utils.parseEther(amount.toString());
-      const depositTx = await lendingContract.deposit({ value: amountWei });
-      await depositTx.wait();
-    } else {
-      console.log("Error: contract not initialized or invalid amount");
+    try {
+      if (lendingContract && account && amount) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const balance = await provider.getBalance(account);
+        const amountWei = ethers.utils.parseEther(amount.toString());
+        
+        if (balance.lt(amountWei)) {
+          throw new Error(`Insufficient balance. You have ${ethers.utils.formatEther(balance.toString())} ETH.`);
+        }
+  
+        const depositTx = await lendingContract.deposit({ value: amountWei });
+        await depositTx.wait();
+      } else {
+        throw new Error("Contract not initialized, account not set or invalid amount");
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
   async function withdrawEth(amount) {
-    if(lendingContract && amount) {
-      const amountWei = ethers.utils.parseEther(amount.toString());
-      const withdrawTx = await lendingContract.withdraw(amountWei);
-      await withdrawTx.wait();
-    } else {
-      console.log("Error: contract not initialized or invalid amount");
+    try {
+      if (lendingContract && account && amount) {
+        const amountWei = ethers.utils.parseEther(amount.toString());
+        const withdrawTx = await lendingContract.withdraw(amountWei);
+        await withdrawTx.wait();
+      } else {
+        throw new Error("Contract not initialized, account not set or invalid amount");
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
+
+  async function repayLoan(amount) {
+    try {
+      if (lendingContract && account && amount) {
+        const amountWei = ethers.utils.parseEther(amount.toString());
+        const repayTx = await lendingContract.repayLoan(amountWei);
+        await repayTx.wait();
+      } else {
+        throw new Error("Contract not initialized, account not set or invalid amount");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
 
   return (
     <div>
@@ -60,10 +89,9 @@ function App() {
       <p>Your account: {account}</p>
       <button onClick={() => depositEth(1)}>Deposit 1 ETH</button>
       <button onClick={() => withdrawEth(1)}>Withdraw 1 ETH</button>
+      <button onClick={() => repayLoan(1)}>Repay Loan</button>
     </div>
   );
 }
 
 export default App;
-
-
