@@ -23,7 +23,7 @@ To install DeFi App, follow these steps:
 
 1. Clone the repository
    ```bash
-   git clone <repo-link>
+   git clone https://github.com/yourusername/tradeSecrets.git
    
 2. cd tradeSecrets
 
